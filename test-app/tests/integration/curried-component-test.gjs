@@ -1,6 +1,5 @@
 import { module, test } from "qunit";
 import { setupRenderingTest } from "test-app/tests/helpers";
-import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { render, settled } from "@ember/test-helpers";
 import curryComponent from "ember-curry-component";
@@ -26,7 +25,7 @@ module("Integration | curryComponent", function (hooks) {
 
     await render(
       <template>
-        {{#let curriedComponent as |myComp|}}<myComp />{{/let}}
+        {{#let curriedComponent as |MyComp|}}<MyComp />{{/let}}
       </template>,
     );
 
@@ -90,7 +89,7 @@ module("Integration | curryComponent", function (hooks) {
     );
 
     await render(
-      hbs`{{#let this.curriedComponent as |myComp|}}<myComp />{{/let}}`,
+      hbs`{{#let this.curriedComponent as |MyComp|}}<MyComp />{{/let}}`,
     );
 
     assert.dom(".one").hasText("one");
@@ -154,8 +153,8 @@ module("Integration | curryComponent", function (hooks) {
 
     await render(
       <template>
-        {{#let (curryComponent baseComponent args) as |myComp|}}
-          <myComp />
+        {{#let (curryComponent baseComponent args) as |MyComp|}}
+          <MyComp />
         {{/let}}
       </template>,
     );

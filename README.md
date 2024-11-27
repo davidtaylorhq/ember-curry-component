@@ -58,7 +58,7 @@ class MyComponent extends Component {
   </template>
 }
 ```
-When `this.name` is reassigned, the `@name` argument on the curried component will be invalidated. The getter will not be re-evaluated.
+When `this.name` is reassigned, the `@name` argument on the curried component will be invalidated. The `curriedComponent` getter will not be re-evaluated.
 
 ### Reactive arguments (option 2: rerender entire component)
 
@@ -83,7 +83,7 @@ class MyComponent extends Component {
   </template>
 }
 ```
-When `this.name` is reassigned, the getter will be invalidated, and the curried component will be completely rerendered.
+When `this.name` is reassigned, the `curriedComponent` getter will be invalidated, and the curried component will be completely rerendered.
 
 ### As a helper
 

@@ -18,9 +18,11 @@ import { getOwner } from "@ember/owner";
 import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
-class extends MyComponent {
+class MyComponent extends Component {
   get curriedComponent(){
-    const args = { name: "David" };
+    const args = {
+      name: "David"
+    };
     return curryComponent(SomeOtherComponent, args, getOwner(this))
   }
 
@@ -38,11 +40,16 @@ import { getOwner } from "@ember/owner";
 import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
-class extends MyComponent {
+class MyComponent extends Component {
   @tracked name = "David";
 
   get curriedComponent() {
-    const args = { get name() { return this.name } };
+    const instance = this;
+    const args = {
+      get name() {
+        return instance.name;
+      }
+    };
     return curryComponent(SomeOtherComponent, args, getOwner(this));
   }
 
@@ -61,12 +68,14 @@ import { getOwner } from "@ember/owner";
 import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
-class extends MyComponent {
+class MyComponent extends Component {
   @tracked name = "David";
 
   get curriedComponent(){
-    const args = { name: this.name };
-    return curryComponent(SomeOtherComponent, args, getOwner(this))
+    const args = {
+      name: this.name
+    };
+    return curryComponent(SomeOtherComponent, args, getOwner(this));
   }
 
   <template>

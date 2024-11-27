@@ -1,11 +1,11 @@
 {
-  "name": "ember-curried-invokables",
-  "version": "0.0.0",
-  "description": "The default blueprint for Embroider v2 addons.",
+  "name": "ember-curry-component",
+  "version": "0.1.0",
+  "description": "Like Ember's builtin `(component)` helper, but with dynamic arguments, and JS compatibility",
   "keywords": [
     "ember-addon"
   ],
-  "repository": "",
+  "repository": "https://github.com/davidtaylorhq/ember-curry-component",
   "license": "MIT",
   "author": "",
   "exports": {
@@ -64,6 +64,12 @@
     "version": 2,
     "type": "addon",
     "main": "addon-main.cjs",
-    "app-js": {}
+    "app-js": {},
+    "externals": [
+      "@glimmer/reference",
+      "@glimmer/runtime",
+      "@glimmer/util",
+      "@glimmer/vm"
+    ]
   }
 }

@@ -3,7 +3,7 @@
 ## Installation
 
 - `git clone <repository-url>`
-- `cd ember-curried-invokables`
+- `cd ember-curry-component`
 - `pnpm install`
 
 ## Linting
@@ -13,7 +13,7 @@
 
 ## Building the addon
 
-- `cd ember-curried-invokables`
+- `cd ember-curry-component`
 - `pnpm build`
 
 ## Running tests

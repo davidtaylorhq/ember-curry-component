@@ -15,7 +15,7 @@ ember install ember-curry-component
 ```gjs
 import Component from "@glimmer/component";
 import { getOwner } from "@ember/owner";
-import { curryComponent } from "ember-curry-component";
+import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
 class extends MyComponent {
@@ -35,7 +35,7 @@ class extends MyComponent {
 ```gjs
 import Component from "@glimmer/component";
 import { getOwner } from "@ember/owner";
-import { curryComponent } from "ember-curry-component";
+import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
 class extends MyComponent {
@@ -58,7 +58,7 @@ When `this.name` is reassigned, the `@name` argument on the curried component wi
 ```gjs
 import Component from "@glimmer/component";
 import { getOwner } from "@ember/owner";
-import { curryComponent } from "ember-curry-component";
+import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
 class extends MyComponent {

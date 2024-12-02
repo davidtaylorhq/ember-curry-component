@@ -5,6 +5,7 @@ import { render, settled } from "@ember/test-helpers";
 import curryComponent from "ember-curry-component";
 import { getOwner } from "@ember/owner";
 import { hbs } from "ember-cli-htmlbars";
+import Component from "@glimmer/component";
 
 const baseComponent = <template>
   <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
@@ -156,6 +157,62 @@ module("Integration | curryComponent", function (hooks) {
         {{#let (curryComponent baseComponent args) as |MyComp|}}
           <MyComp />
         {{/let}}
+      </template>,
+    );
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("lazy component", async function (assert) {
+    class Lazy extends Component {
+      @tracked component;
+
+      constructor() {
+        super(...arguments);
+        this.args.componentFetcher().then((component) => {
+          this.component = component;
+        });
+      }
+
+      get argsForCurry() {
+        const selfArgs = this.args;
+        const args = {};
+        for (const key in this.args) {
+          if (key !== "componentFetcher") {
+            Object.defineProperty(args, key, {
+              get() {
+                return selfArgs[key];
+              },
+            });
+          }
+        }
+        return args;
+      }
+
+      get curriedComponent() {
+        if (this.component) {
+          return curryComponent(
+            this.component,
+            this.argsForCurry,
+            getOwner(this),
+          );
+        }
+      }
+      <template>
+        {{#if this.curriedComponent}}
+          <this.curriedComponent />
+        {{else}}
+          Loading...
+        {{/if}}
+      </template>
+    }
+
+    const componentFetcher = async () => baseComponent; // could be an async import()
+
+    await render(
+      <template>
+        <Lazy @componentFetcher={{componentFetcher}} @one="one" @two="two" />
       </template>,
     );
 

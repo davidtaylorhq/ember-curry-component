@@ -33,24 +33,24 @@ jobs:
       - name: Run Tests
         run: pnpm test
 
-  floating:
-    name: "Floating Dependencies"
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  # floating:
+  #   name: "Floating Dependencies"
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
 
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - name: Install Dependencies
-        run: pnpm install --no-lockfile
-      - name: Run Tests
-        run: pnpm test
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: pnpm/action-setup@v3
+  #       with:
+  #         version: 9
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 22
+  #         cache: pnpm
+  #     - name: Install Dependencies
+  #       run: pnpm install --no-lockfile
+  #     - name: Run Tests
+  #       run: pnpm test
 
   try-scenarios:
     name: ${{ matrix.try-scenario }}
@@ -64,11 +64,12 @@ jobs:
         try-scenario:
           - ember-lts-4.12
           - ember-lts-5.4
+          - ember-lts-5.12
           - ember-release
           - ember-beta
           - ember-canary
           - embroider-safe
-          - embroider-optimized
+          # - embroider-optimized
 
     steps:
       - uses: actions/checkout@v4

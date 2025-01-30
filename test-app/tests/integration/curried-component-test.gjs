@@ -1,21 +1,20 @@
 import { module, test } from "qunit";
 import { setupRenderingTest } from "test-app/tests/helpers";
-import { tracked } from "@glimmer/tracking";
+import { tracked, cached } from "@glimmer/tracking";
 import { render, settled } from "@ember/test-helpers";
 import curryComponent from "ember-curry-component";
 import { getOwner } from "@ember/owner";
 import { hbs } from "ember-cli-htmlbars";
-
-const baseComponent = <template>
-  <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
-</template>;
+import Component from "@glimmer/component";
+import { TrackedAsyncData } from "ember-async-data";
+import DemoComponent from "./demo-component";
 
 module("Integration | curryComponent", function (hooks) {
   setupRenderingTest(hooks);
 
   test("strict mode | {{#let}}", async function (assert) {
     const curriedComponent = curryComponent(
-      baseComponent,
+      DemoComponent,
       {
         one: "one",
         two: "two",
@@ -34,11 +33,8 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("strict mode | access via property", async function (assert) {
-    const baseComponent = <template>
-      <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
-    </template>;
     const curriedComponent = curryComponent(
-      baseComponent,
+      DemoComponent,
       {
         one: "one",
         two: "two",
@@ -60,11 +56,8 @@ module("Integration | curryComponent", function (hooks) {
     // Seems that glimmer doesn't accept CurriedValue components on local
     // scope references in strict mode templates.
 
-    const baseComponent = <template>
-      <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
-    </template>;
     const curriedComponent = curryComponent(
-      baseComponent,
+      DemoComponent,
       {
         one: "one",
         two: "two",
@@ -80,7 +73,7 @@ module("Integration | curryComponent", function (hooks) {
 
   test("classic mode | {{#let}}", async function (assert) {
     this.curriedComponent = curryComponent(
-      baseComponent,
+      DemoComponent,
       {
         one: "one",
         two: "two",
@@ -98,7 +91,7 @@ module("Integration | curryComponent", function (hooks) {
 
   test("classic mode | property", async function (assert) {
     this.curriedComponent = curryComponent(
-      baseComponent,
+      DemoComponent,
       {
         one: "one",
         two: "two",
@@ -119,7 +112,7 @@ module("Integration | curryComponent", function (hooks) {
     })();
 
     this.curriedComponent = curryComponent(
-      baseComponent,
+      DemoComponent,
       {
         get one() {
           return state.one;
@@ -153,9 +146,61 @@ module("Integration | curryComponent", function (hooks) {
 
     await render(
       <template>
-        {{#let (curryComponent baseComponent args) as |MyComp|}}
+        {{#let (curryComponent DemoComponent args) as |MyComp|}}
           <MyComp />
         {{/let}}
+      </template>,
+    );
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("passthrough all args", async function (assert) {
+    class Wrapper extends Component {
+      get curriedComponent() {
+        return curryComponent(DemoComponent, this.args, getOwner(this));
+      }
+      <template><this.curriedComponent /></template>
+    }
+
+    await render(<template><Wrapper @one="one" @two="two" /></template>);
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("lazy component", async function (assert) {
+    class Lazy extends Component {
+      @cached
+      get componentPromise() {
+        return new TrackedAsyncData(this.args.asyncComponent());
+      }
+
+      get curriedComponent() {
+        if (this.componentPromise.isResolved) {
+          return curryComponent(
+            this.componentPromise.value,
+            this.args,
+            getOwner(this),
+          );
+        }
+      }
+
+      <template>
+        {{#if this.curriedComponent}}
+          <this.curriedComponent />
+        {{else}}
+          Loading...
+        {{/if}}
+      </template>
+    }
+
+    const asyncComponent = async () => DemoComponent; // Could be an async import
+
+    await render(
+      <template>
+        <Lazy @asyncComponent={{asyncComponent}} @one="one" @two="two" />
       </template>,
     );
 

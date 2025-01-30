@@ -6,21 +6,18 @@ import * as vm from '@glimmer/vm';
 // CurriedType only made available in vm from Ember 5.6.0. Fallback to hardcoded value.
 const ComponentCurriedType = vm.CurriedType?.Component || 0;
 
+/**
+ * Curry a component with named arguments.
+ *
+ * @param {Component} componentKlass - The component class to curry
+ * @param {Object} namedArgs - Named arguments to curry the component with. The set of keys must be static, but the values can be dynamic (e.g. getters, or a Proxy)
+ * @param {Owner} owner - The current application instance
+ */
 export default function curryComponent(componentKlass, namedArgs, owner) {
   let namedDict = dict();
 
-  if (!(typeof namedArgs === 'object' && namedArgs.constructor === Object)) {
-    throw 'Named arguments must be a simple object';
-  }
-
-  for (const [key, descriptor] of Object.entries(
-    Object.getOwnPropertyDescriptors(namedArgs),
-  )) {
-    if (descriptor.get) {
-      namedDict[key] = createComputeRef(() => namedArgs[key]);
-    } else {
-      namedDict[key] = createConstRef(namedArgs[key]);
-    }
+  for (const key of Object.keys(namedArgs)) {
+    namedDict[key] = createComputeRef(() => namedArgs[key]);
   }
 
   return curry(

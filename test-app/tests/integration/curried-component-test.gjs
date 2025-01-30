@@ -146,6 +146,7 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("passthrough all args - with helper", async function (assert) {
+    // eslint-disable-next-line ember/no-empty-glimmer-component-classes
     class Wrapper extends Component {
       <template>
         {{#let (curryComponent DemoComponent this.args) as |MyComp|}}
@@ -168,9 +169,9 @@ module("Integration | curryComponent", function (hooks) {
       }
 
       get curriedComponent() {
-        if (this.componentPromise.isResolved) {
-          return curryComponent(this.componentPromise.value, this.args);
-        }
+        return this.componentPromise.isResolved
+          ? curryComponent(this.componentPromise.value, this.args)
+          : null;
       }
 
       <template>

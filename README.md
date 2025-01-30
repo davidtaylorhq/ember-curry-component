@@ -14,7 +14,6 @@ ember install ember-curry-component
 
 ```gjs
 import Component from "@glimmer/component";
-import { getOwner } from "@ember/owner";
 import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
@@ -23,7 +22,7 @@ class MyComponent extends Component {
     const args = {
       name: "David"
     };
-    return curryComponent(SomeOtherComponent, args, getOwner(this))
+    return curryComponent(SomeOtherComponent, args)
   }
 
   <template>
@@ -36,7 +35,6 @@ class MyComponent extends Component {
 
 ```gjs
 import Component from "@glimmer/component";
-import { getOwner } from "@ember/owner";
 import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
@@ -50,7 +48,7 @@ class MyComponent extends Component {
         return instance.name;
       }
     };
-    return curryComponent(SomeOtherComponent, args, getOwner(this));
+    return curryComponent(SomeOtherComponent, args);
   }
 
   <template>
@@ -64,7 +62,6 @@ When `this.name` is reassigned, the `@name` argument on the curried component wi
 
 ```gjs
 import Component from "@glimmer/component";
-import { getOwner } from "@ember/owner";
 import curryComponent from "ember-curry-component";
 import SomeOtherComponent from "./some-other-component";
 
@@ -75,7 +72,7 @@ class MyComponent extends Component {
     const args = {
       name: this.name
     };
-    return curryComponent(SomeOtherComponent, args, getOwner(this));
+    return curryComponent(SomeOtherComponent, args);
   }
 
   <template>
@@ -87,7 +84,7 @@ When `this.name` is reassigned, the `curriedComponent` getter will be invalidate
 
 ### As a helper
 
-In `.gjs`/`.gjs` files, the curryComponent helper can be used directly in a template. In this case, the owner does not need to be passed explicitly.
+In `.gjs`/`.gjs` files, the curryComponent helper can be used directly in a template.
 
 ```gjs
 import SomeOtherComponent from "./some-other-component";
@@ -107,13 +104,13 @@ In `<template>`, curried components cannot be rendered from the local scope. Thi
 
 ```gjs
 // Do not copy!
-const curried = curryComponent(MyComponent, args, owner)
+const curried = curryComponent(MyComponent, args)
 <template><curried /></template>
 ```
 You must wrap the invocation in `{{#let}}` instead:
 ```gjs
 // Do not copy!
-const curried = curryComponent(MyComponent, args, owner)
+const curried = curryComponent(MyComponent, args)
 <template>
   {{#let curried as |myComponent|}}
     <myComponent />

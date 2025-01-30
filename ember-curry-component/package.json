@@ -1,6 +1,6 @@
 {
   "name": "ember-curry-component",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Like Ember's builtin `(component)` helper, but with dynamic arguments, and JS compatibility",
   "keywords": [
     "ember-addon"

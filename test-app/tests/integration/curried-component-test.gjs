@@ -1,27 +1,21 @@
 import { module, test } from "qunit";
 import { setupRenderingTest } from "test-app/tests/helpers";
-import { tracked } from "@glimmer/tracking";
+import { tracked, cached } from "@glimmer/tracking";
 import { render, settled } from "@ember/test-helpers";
 import curryComponent from "ember-curry-component";
-import { getOwner } from "@ember/owner";
 import { hbs } from "ember-cli-htmlbars";
-
-const baseComponent = <template>
-  <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
-</template>;
+import Component from "@glimmer/component";
+import { TrackedAsyncData } from "ember-async-data";
+import DemoComponent from "./demo-component";
 
 module("Integration | curryComponent", function (hooks) {
   setupRenderingTest(hooks);
 
   test("strict mode | {{#let}}", async function (assert) {
-    const curriedComponent = curryComponent(
-      baseComponent,
-      {
-        one: "one",
-        two: "two",
-      },
-      getOwner(this),
-    );
+    const curriedComponent = curryComponent(DemoComponent, {
+      one: "one",
+      two: "two",
+    });
 
     await render(
       <template>
@@ -34,17 +28,10 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("strict mode | access via property", async function (assert) {
-    const baseComponent = <template>
-      <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
-    </template>;
-    const curriedComponent = curryComponent(
-      baseComponent,
-      {
-        one: "one",
-        two: "two",
-      },
-      getOwner(this),
-    );
+    const curriedComponent = curryComponent(DemoComponent, {
+      one: "one",
+      two: "two",
+    });
 
     const state = {
       curriedComponent,
@@ -60,17 +47,10 @@ module("Integration | curryComponent", function (hooks) {
     // Seems that glimmer doesn't accept CurriedValue components on local
     // scope references in strict mode templates.
 
-    const baseComponent = <template>
-      <div class="one">{{@one}}</div><div class="two">{{@two}}</div>
-    </template>;
-    const curriedComponent = curryComponent(
-      baseComponent,
-      {
-        one: "one",
-        two: "two",
-      },
-      getOwner(this),
-    );
+    const curriedComponent = curryComponent(DemoComponent, {
+      one: "one",
+      two: "two",
+    });
 
     await render(<template><curriedComponent /></template>);
 
@@ -79,14 +59,10 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("classic mode | {{#let}}", async function (assert) {
-    this.curriedComponent = curryComponent(
-      baseComponent,
-      {
-        one: "one",
-        two: "two",
-      },
-      getOwner(this),
-    );
+    this.curriedComponent = curryComponent(DemoComponent, {
+      one: "one",
+      two: "two",
+    });
 
     await render(
       hbs`{{#let this.curriedComponent as |MyComp|}}<MyComp />{{/let}}`,
@@ -97,14 +73,10 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("classic mode | property", async function (assert) {
-    this.curriedComponent = curryComponent(
-      baseComponent,
-      {
-        one: "one",
-        two: "two",
-      },
-      getOwner(this),
-    );
+    this.curriedComponent = curryComponent(DemoComponent, {
+      one: "one",
+      two: "two",
+    });
 
     await render(hbs`<this.curriedComponent />`);
 
@@ -118,18 +90,14 @@ module("Integration | curryComponent", function (hooks) {
       @tracked two = "two";
     })();
 
-    this.curriedComponent = curryComponent(
-      baseComponent,
-      {
-        get one() {
-          return state.one;
-        },
-        get two() {
-          return state.two;
-        },
+    this.curriedComponent = curryComponent(DemoComponent, {
+      get one() {
+        return state.one;
       },
-      getOwner(this),
-    );
+      get two() {
+        return state.two;
+      },
+    });
 
     await render(hbs`<this.curriedComponent />`);
 
@@ -153,9 +121,73 @@ module("Integration | curryComponent", function (hooks) {
 
     await render(
       <template>
-        {{#let (curryComponent baseComponent args) as |MyComp|}}
+        {{#let (curryComponent DemoComponent args) as |MyComp|}}
           <MyComp />
         {{/let}}
+      </template>,
+    );
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("passthrough all args - with getter", async function (assert) {
+    class Wrapper extends Component {
+      get curriedComponent() {
+        return curryComponent(DemoComponent, this.args);
+      }
+      <template><this.curriedComponent /></template>
+    }
+
+    await render(<template><Wrapper @one="one" @two="two" /></template>);
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("passthrough all args - with helper", async function (assert) {
+    // eslint-disable-next-line ember/no-empty-glimmer-component-classes
+    class Wrapper extends Component {
+      <template>
+        {{#let (curryComponent DemoComponent this.args) as |MyComp|}}
+          <MyComp />
+        {{/let}}
+      </template>
+    }
+
+    await render(<template><Wrapper @one="one" @two="two" /></template>);
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("lazy component", async function (assert) {
+    class Lazy extends Component {
+      @cached
+      get componentPromise() {
+        return new TrackedAsyncData(this.args.asyncComponent());
+      }
+
+      get curriedComponent() {
+        return this.componentPromise.isResolved
+          ? curryComponent(this.componentPromise.value, this.args)
+          : null;
+      }
+
+      <template>
+        {{#if this.curriedComponent}}
+          <this.curriedComponent />
+        {{else}}
+          Loading...
+        {{/if}}
+      </template>
+    }
+
+    const asyncComponent = async () => DemoComponent; // Could be an async import
+
+    await render(
+      <template>
+        <Lazy @asyncComponent={{asyncComponent}} @one="one" @two="two" />
       </template>,
     );
 

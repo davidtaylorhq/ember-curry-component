@@ -81,5 +81,8 @@
   },
   "ember": {
     "edition": "octane"
+  },
+  "dependencies": {
+    "ember-async-data": "^1.0.3"
   }
 }

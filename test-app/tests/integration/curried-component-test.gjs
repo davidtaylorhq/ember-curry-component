@@ -7,15 +7,22 @@ import { hbs } from "ember-cli-htmlbars";
 import Component from "@glimmer/component";
 import { TrackedAsyncData } from "ember-async-data";
 import DemoComponent from "./demo-component";
+import { setComponentTemplate } from "@glimmer/manager";
+import { getOwner } from "@ember/owner";
+import templateOnly from "@ember/component/template-only";
 
 module("Integration | curryComponent", function (hooks) {
   setupRenderingTest(hooks);
 
   test("strict mode | {{#let}}", async function (assert) {
-    const curriedComponent = curryComponent(DemoComponent, {
-      one: "one",
-      two: "two",
-    });
+    const curriedComponent = curryComponent(
+      DemoComponent,
+      {
+        one: "one",
+        two: "two",
+      },
+      getOwner(this),
+    );
 
     await render(
       <template>
@@ -28,10 +35,14 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("strict mode | access via property", async function (assert) {
-    const curriedComponent = curryComponent(DemoComponent, {
-      one: "one",
-      two: "two",
-    });
+    const curriedComponent = curryComponent(
+      DemoComponent,
+      {
+        one: "one",
+        two: "two",
+      },
+      getOwner(this),
+    );
 
     const state = {
       curriedComponent,
@@ -47,10 +58,14 @@ module("Integration | curryComponent", function (hooks) {
     // Seems that glimmer doesn't accept CurriedValue components on local
     // scope references in strict mode templates.
 
-    const curriedComponent = curryComponent(DemoComponent, {
-      one: "one",
-      two: "two",
-    });
+    const curriedComponent = curryComponent(
+      DemoComponent,
+      {
+        one: "one",
+        two: "two",
+      },
+      getOwner(this),
+    );
 
     await render(<template><curriedComponent /></template>);
 
@@ -59,10 +74,14 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("classic mode | {{#let}}", async function (assert) {
-    this.curriedComponent = curryComponent(DemoComponent, {
-      one: "one",
-      two: "two",
-    });
+    this.curriedComponent = curryComponent(
+      DemoComponent,
+      {
+        one: "one",
+        two: "two",
+      },
+      getOwner(this),
+    );
 
     await render(
       hbs`{{#let this.curriedComponent as |MyComp|}}<MyComp />{{/let}}`,
@@ -73,10 +92,14 @@ module("Integration | curryComponent", function (hooks) {
   });
 
   test("classic mode | property", async function (assert) {
-    this.curriedComponent = curryComponent(DemoComponent, {
-      one: "one",
-      two: "two",
-    });
+    this.curriedComponent = curryComponent(
+      DemoComponent,
+      {
+        one: "one",
+        two: "two",
+      },
+      getOwner(this),
+    );
 
     await render(hbs`<this.curriedComponent />`);
 
@@ -90,14 +113,18 @@ module("Integration | curryComponent", function (hooks) {
       @tracked two = "two";
     })();
 
-    this.curriedComponent = curryComponent(DemoComponent, {
-      get one() {
-        return state.one;
+    this.curriedComponent = curryComponent(
+      DemoComponent,
+      {
+        get one() {
+          return state.one;
+        },
+        get two() {
+          return state.two;
+        },
       },
-      get two() {
-        return state.two;
-      },
-    });
+      getOwner(this),
+    );
 
     await render(hbs`<this.curriedComponent />`);
 
@@ -134,7 +161,7 @@ module("Integration | curryComponent", function (hooks) {
   test("passthrough all args - with getter", async function (assert) {
     class Wrapper extends Component {
       get curriedComponent() {
-        return curryComponent(DemoComponent, this.args);
+        return curryComponent(DemoComponent, this.args, getOwner(this));
       }
       <template><this.curriedComponent /></template>
     }
@@ -170,7 +197,11 @@ module("Integration | curryComponent", function (hooks) {
 
       get curriedComponent() {
         return this.componentPromise.isResolved
-          ? curryComponent(this.componentPromise.value, this.args)
+          ? curryComponent(
+              this.componentPromise.value,
+              this.args,
+              getOwner(this),
+            )
           : null;
       }
 
@@ -188,6 +219,34 @@ module("Integration | curryComponent", function (hooks) {
     await render(
       <template>
         <Lazy @asyncComponent={{asyncComponent}} @one="one" @two="two" />
+      </template>,
+    );
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
+
+  test("ownership", async function (assert) {
+    const LooseModeComponent = templateOnly();
+    setComponentTemplate(
+      hbs`<ResolvableComponent @one={{@one}} @two={{@two}} />`,
+      LooseModeComponent,
+    );
+
+    const curriedComponent = curryComponent(
+      LooseModeComponent,
+      {
+        one: "one",
+        two: "two",
+      },
+      getOwner(this),
+    );
+
+    await render(
+      <template>
+        {{#let curriedComponent as |Comp|}}
+          <Comp />
+        {{/let}}
       </template>,
     );
 

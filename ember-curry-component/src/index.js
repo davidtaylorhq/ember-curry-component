@@ -7,6 +7,39 @@ import { setHelperManager, capabilities } from '@ember/helper';
 // CurriedType only made available in vm from Ember 5.6.0. Fallback to hardcoded value.
 const ComponentCurriedType = vm.CurriedType?.Component || 0;
 
+// Based on NamedArgsProxy in @glimmer/manager
+class CurryComponentArgsProxy {
+  constructor(namedArgs) {
+    this.namedArgs = namedArgs;
+  }
+
+  get(_, prop) {
+    return createComputeRef(() => Reflect.get(this.namedArgs, prop));
+  }
+
+  has(target, prop) {
+    return Reflect.has(this.namedArgs, prop);
+  }
+
+  ownKeys() {
+    return Reflect.ownKeys(this.namedArgs);
+  }
+
+  isExtensible() {
+    return false;
+  }
+
+  getOwnPropertyDescriptor(_, prop) {
+    // args proxies do not have real property descriptors, so you should never need to call getOwnPropertyDescriptor yourself. This code exists for enumerability, such as in for-in loops and Object.keys()
+    if (Reflect.has(this.namedArgs, prop)) {
+      return {
+        enumerable: true,
+        configurable: true,
+      };
+    }
+  }
+}
+
 /**
  * Curry a component with named arguments.
  *
@@ -22,17 +55,13 @@ export default function curryComponent(componentKlass, namedArgs, owner) {
     );
   }
 
-  let namedDict = dict();
-
-  for (const key of Object.keys(namedArgs)) {
-    namedDict[key] = createComputeRef(() => namedArgs[key]);
-  }
+  const argsProxy = new Proxy({}, new CurryComponentArgsProxy(namedArgs));
 
   return curry(
     ComponentCurriedType,
     componentKlass,
     owner,
-    createCapturedArgs(namedDict, EMPTY_POSITIONAL),
+    createCapturedArgs(argsProxy, EMPTY_POSITIONAL),
     false,
   );
 }

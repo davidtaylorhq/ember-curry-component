@@ -253,4 +253,19 @@ module("Integration | curryComponent", function (hooks) {
     assert.dom(".one").hasText("one");
     assert.dom(".two").hasText("two");
   });
+
+  test("adding new arguments after curry, but before render", async function (assert) {
+    const args = {
+      one: "one",
+    };
+
+    this.curriedComponent = curryComponent(DemoComponent, args, getOwner(this));
+
+    args.two = "two";
+
+    await render(hbs`<this.curriedComponent />`);
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+  });
 });

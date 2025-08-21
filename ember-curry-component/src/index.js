@@ -1,11 +1,9 @@
 import { createComputeRef } from '@glimmer/reference';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
 import { dict } from '@glimmer/util';
-import * as vm from '@glimmer/vm';
 import { setHelperManager, capabilities } from '@ember/helper';
 
-// CurriedType only made available in vm from Ember 5.6.0. Fallback to hardcoded value.
-const ComponentCurriedType = vm.CurriedType?.Component || 0;
+const ComponentCurriedType = 0;
 
 /**
  * Curry a component with named arguments.

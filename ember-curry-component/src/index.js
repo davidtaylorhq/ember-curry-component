@@ -1,9 +1,10 @@
 import { createComputeRef } from '@glimmer/reference';
 import { createCapturedArgs, curry, EMPTY_POSITIONAL } from '@glimmer/runtime';
-import { dict } from '@glimmer/util';
 import { setHelperManager, capabilities } from '@ember/helper';
 
 const ComponentCurriedType = 0;
+
+const CACHE = new WeakMap();
 
 /**
  * Curry a component with named arguments.
@@ -20,19 +21,33 @@ export default function curryComponent(componentKlass, namedArgs, owner) {
     );
   }
 
-  let namedDict = dict();
-
-  for (const key of Object.keys(namedArgs)) {
-    namedDict[key] = createComputeRef(() => namedArgs[key]);
+  let componentCache = CACHE.get(componentKlass);
+  if (componentCache?.has(namedArgs)) {
+    return componentCache.get(namedArgs);
   }
 
-  return curry(
+  const argRefsProxy = new Proxy(namedArgs, {
+    get(target, prop) {
+      return createComputeRef(() => target[prop]);
+    },
+  });
+
+  const result = curry(
     ComponentCurriedType,
     componentKlass,
     owner,
-    createCapturedArgs(namedDict, EMPTY_POSITIONAL),
+    createCapturedArgs(argRefsProxy, EMPTY_POSITIONAL),
     false,
   );
+
+  if (!componentCache) {
+    componentCache = new WeakMap();
+    CACHE.set(componentKlass, componentCache);
+  }
+
+  componentCache.set(namedArgs, result);
+
+  return result;
 }
 
 /**

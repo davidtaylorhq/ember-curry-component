@@ -112,7 +112,6 @@ const curried = curryComponent(MyComponent, args, owner)
 ```
 You must wrap the invocation in `{{#let}}` instead:
 ```gjs
-// Do not copy!
 const curried = curryComponent(MyComponent, args, owner)
 <template>
   {{#let curried as |myComponent|}}

@@ -1,7 +1,7 @@
 import { module, test } from "qunit";
 import { setupRenderingTest } from "test-app/tests/helpers";
 import { tracked, cached } from "@glimmer/tracking";
-import { render, settled } from "@ember/test-helpers";
+import { fillIn, render, settled } from "@ember/test-helpers";
 import curryComponent from "ember-curry-component";
 import { hbs } from "ember-cli-htmlbars";
 import Component from "@glimmer/component";
@@ -252,5 +252,121 @@ module("Integration | curryComponent", function (hooks) {
 
     assert.dom(".one").hasText("one");
     assert.dom(".two").hasText("two");
+  });
+
+  test("does not rerender unnecessarily", async function (assert) {
+    const owner = getOwner(this);
+
+    const data = new (class {
+      @tracked component;
+      args = {};
+
+      get curriedComponent() {
+        return curryComponent(this.component, this.args, owner);
+      }
+    })();
+
+    data.component = <template>
+      {{!template-lint-disable}}
+      Foobar
+      <input type="text" />
+    </template>;
+
+    await render(
+      <template>
+        {{#let data.curriedComponent as |Comp|}}
+          <Comp />
+        {{/let}}
+      </template>,
+    );
+
+    await fillIn("input", "somecontent");
+
+    // eslint-disable-next-line no-self-assign
+    data.component = data.component;
+    await settled();
+
+    assert.dom("input").hasValue("somecontent");
+  });
+
+  test("dynamic arguments", async function (assert) {
+    const args = {
+      one: "one",
+      two: "two",
+    };
+
+    const comp = <template>
+      <div class="one">
+        {{@one}}
+      </div>
+      <div class="two">
+        {{@two}}
+      </div>
+      <div class="three">
+        {{@three}}
+      </div>
+    </template>;
+
+    const curriedComponent = curryComponent(comp, args, getOwner(this));
+
+    await render(
+      <template>
+        {{#let curriedComponent as |Comp|}}
+          <Comp />
+        {{/let}}
+      </template>,
+    );
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+    assert.dom(".three").hasNoText("three");
+
+    args.three = "three";
+    await settled();
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+    assert.dom(".three").hasNoText("three"); // Adding arg keys not supported
+
+    const newCurriedComponent = curryComponent(comp, args, getOwner(this));
+
+    await render(
+      <template>
+        {{#let newCurriedComponent as |Comp|}}
+          <Comp />
+        {{/let}}
+      </template>,
+    );
+
+    assert.dom(".one").hasText("one");
+    assert.dom(".two").hasText("two");
+    assert.dom(".three").hasText("three");
+  });
+
+  test("nested curryComponent calls", async function (assert) {
+    const comp = <template>
+      <div class="one">
+        {{@one}}
+      </div>
+      <div class="two">
+        {{@two}}
+      </div>
+    </template>;
+
+    const doubleCurried = curryComponent(
+      curryComponent(comp, { one: "hello" }, getOwner(this)),
+      { two: "world" },
+      getOwner(this),
+    );
+
+    await render(
+      <template>
+        {{#let doubleCurried as |Comp|}}
+          <Comp />
+        {{/let}}
+      </template>,
+    );
+
+    assert.dom(".one").hasText("hello");
+    assert.dom(".two").hasText("world");
   });
 });

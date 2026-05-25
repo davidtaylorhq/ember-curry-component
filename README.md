@@ -127,3 +127,7 @@ See the [Contributing](CONTRIBUTING.md) guide for details.
 ## License
 
 This project is licensed under the [MIT License](LICENSE.md).
+
+## References
+
+EmberFest 2025 Lighting Talk: https://www.youtube.com/watch?v=osi2P5Kvqfg

@@ -6,7 +6,12 @@
 
 # compiled output
 dist/
-declarations/
+# Ignore generated declarations, but keep the hand-authored type declaration
+# (this addon ships types without a TypeScript build, so it is committed rather
+# than generated). Note: the contents are ignored via `declarations/*` rather
+# than the directory, otherwise the negation below cannot re-include the file.
+declarations/*
+!declarations/index.d.ts
 
 # npm/pnpm/yarn pack output
 *.tgz

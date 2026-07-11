@@ -1,6 +1,6 @@
 {
   "name": "ember-curry-component",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Like Ember's builtin `(component)` helper, but with dynamic arguments, and JS compatibility",
   "keywords": [
     "ember-addon"
@@ -9,9 +9,22 @@
   "license": "MIT",
   "author": "",
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*.js",
+    ".": {
+      "types": "./declarations/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./declarations/*.d.ts",
+      "default": "./dist/*.js"
+    },
     "./addon-main.js": "./addon-main.cjs"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "declarations/*"
+      ]
+    }
   },
   "files": [
     "addon-main.cjs",

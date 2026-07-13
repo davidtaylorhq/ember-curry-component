@@ -3,6 +3,7 @@
   "repository": "",
   "license": "MIT",
   "author": "",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "build": "pnpm --filter ember-curry-component build",
     "lint": "pnpm --filter '*' lint",

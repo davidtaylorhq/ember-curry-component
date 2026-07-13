@@ -5,6 +5,10 @@
 /declarations/
 /dist/
 
+# Type-tests are checked by glint (see `lint:types`), not eslint; the test-app's
+# eslint setup does not parse .gts.
+/type-tests/
+
 # misc
 /coverage/
 !.*

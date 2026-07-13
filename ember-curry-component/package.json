@@ -1,6 +1,6 @@
 {
   "name": "ember-curry-component",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Like Ember's builtin `(component)` helper, but with dynamic arguments, and JS compatibility",
   "keywords": [
     "ember-addon"
@@ -9,14 +9,27 @@
   "license": "MIT",
   "author": "",
   "exports": {
-    ".": "./dist/index.js",
-    "./*": "./dist/*.js",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./types/*.d.ts",
+      "default": "./dist/*.js"
+    },
     "./addon-main.js": "./addon-main.cjs"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "types/*"
+      ]
+    }
   },
   "files": [
     "addon-main.cjs",
-    "declarations",
-    "dist"
+    "dist",
+    "types"
   ],
   "scripts": {
     "build": "rollup --config",
@@ -39,6 +52,7 @@
     "@babel/eslint-parser": "^7.24.1",
     "@babel/runtime": "^7.24.4",
     "@embroider/addon-dev": "^4.3.1",
+    "@glint/template": "^1.5.2",
     "@rollup/plugin-babel": "^6.0.4",
     "babel-plugin-ember-template-compilation": "^2.2.5",
     "concurrently": "^8.2.2",
@@ -53,6 +67,14 @@
     "prettier-plugin-ember-template-tag": "^2.0.2",
     "rollup": "^4.16.4",
     "rollup-plugin-copy": "^3.5.0"
+  },
+  "peerDependencies": {
+    "@glint/template": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@glint/template": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

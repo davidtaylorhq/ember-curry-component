@@ -19,9 +19,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -40,9 +38,7 @@ jobs:
 
   #   steps:
   #     - uses: actions/checkout@v4
-  #     - uses: pnpm/action-setup@v3
-  #       with:
-  #         version: 9
+  #     - uses: pnpm/action-setup@v6
   #     - uses: actions/setup-node@v4
   #       with:
   #         node-version: 22
@@ -74,9 +70,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
+      - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -86,3 +80,27 @@ jobs:
       - name: Run Tests
         run: ./node_modules/.bin/ember try:one ${{ matrix.try-scenario }} --skip-cleanup
         working-directory: test-app
+
+  publish:
+    name: "Publish"
+    runs-on: ubuntu-latest
+    needs: 'test'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 10
+
+    permissions:
+      id-token: write # npm trusted publishing
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      # Publishes only if the version in package.json isn't on the registry yet,
+      # so pushes to main that don't bump the version are a no-op.
+      - name: Publish
+        run: pnpm publish -r

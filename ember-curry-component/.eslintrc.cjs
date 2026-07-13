@@ -12,8 +12,12 @@ module.exports = {
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        // babel.config.json contains an async plugin, which @babel/eslint-parser
+        // cannot load; linting only needs to parse, not transform
+        requireConfigFile: false,
         babelOptions: {
-          root: __dirname,
+          configFile: false,
+          babelrc: false,
         },
       },
       plugins: ['ember', 'import'],

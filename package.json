@@ -22,7 +22,8 @@
   },
   "pnpm": {
     "overrides": {
-      "@types/eslint": "^7.0.0"
+      "@types/eslint": "^7.0.0",
+      "@ember/test-waiters": "^4.1.2"
     }
   }
 }

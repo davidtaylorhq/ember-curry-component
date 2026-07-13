@@ -1,6 +1,7 @@
 import templateOnly from "@ember/component/template-only";
 import type Owner from "@ember/owner";
 import Component from "@glimmer/component";
+import type { WithBoundArgs } from "@glint/template";
 import curryComponent from "ember-curry-component";
 import { expectTypeOf } from "expect-type";
 
@@ -20,14 +21,16 @@ class DemoRequired extends Component<{
   Blocks: { default: [] };
 }> {}
 
-// Case 1 — direct 3-arg call, all-optional class → returns the same type.
-expectTypeOf(curryComponent(DemoOptional, {}, owner)).toEqualTypeOf<
-  typeof DemoOptional
+// Case 1 — the curried args are bound in the returned type, exactly as they are
+// by `{{component}}`.
+expectTypeOf(curryComponent(DemoOptional, { one: "a" }, owner)).toEqualTypeOf<
+  WithBoundArgs<typeof DemoOptional, "one">
 >();
 
-// Case 2 — required-arg class is ACCEPTED (unconstrained <C> must admit it).
+// Case 2 — a required arg is bound too, so it is no longer required at the
+// invocation site (see template-invocation.gts for the invocation itself).
 expectTypeOf(curryComponent(DemoRequired, { name: "x" }, owner)).toEqualTypeOf<
-  typeof DemoRequired
+  WithBoundArgs<typeof DemoRequired, "name">
 >();
 
 // Case 3 — a template-only component value is accepted.
@@ -69,13 +72,12 @@ curryComponent(DemoOptional, namedInterfaceArgs, owner);
 // Case 8 — extra keys the component does not declare are accepted.
 curryComponent(DemoOptional, { one: "a", nope: 123 }, owner);
 
-// Case 9 — 2-arg call (template overload; owner omitted) type-checks.
-expectTypeOf(curryComponent(DemoOptional, {})).toEqualTypeOf<
-  typeof DemoOptional
->();
+// Case 9 — negative: the 2-arg call is the template form only; from JS it must
+// be rejected, since the implementation throws without an owner.
+// @ts-expect-error - owner is required outside of a template
+curryComponent(DemoOptional, {});
 
-// Case 10 — owner is required in the 3-arg (JS) form: passing `undefined`
-// matches neither overload (the 2-arg overload takes exactly two arguments).
+// Case 10 — owner must be an Owner: `undefined` is rejected.
 // @ts-expect-error - owner must be an Owner, not undefined
 curryComponent(DemoOptional, {}, undefined);
 
